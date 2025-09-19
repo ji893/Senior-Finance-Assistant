@@ -48,6 +48,8 @@ python -m uvicorn app:app --reload --host 0.0.0.0 --port 8000
 http://127.0.0.1:8000/
 
 
+![image1](https://github.com/user-attachments/assets/caa10c19-1b28-4dd8-96cc-c11493be0a3b)
+
 
 
 

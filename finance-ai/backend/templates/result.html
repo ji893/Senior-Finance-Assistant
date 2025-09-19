@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>분석 결과</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            color: #16a085; /* 초록색 포인트 */
+            border-bottom: 2px solid #16a085;
+            padding-bottom: 5px;
+        }
+        .risk-alert {
+            background-color: #ffe6e6;
+            border-left: 5px solid #e74c3c; /* 위험 빨간색 */
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #16a085;
+            color: white;
+        }
+        .card {
+            background-color: #e6f7ff;
+            border-left: 5px solid #16a085;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .reason {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>분석 결과</h1>
+
+    <div class="section">
+        <h2>사용자 질문</h2>
+        <p>{{ transcript }}</p>
+    </div>
+
+    <div class="section">
+        <h2>위험 알림</h2>
+        {% if gpt_data.risk_alerts %}
+            {% for alert in gpt_data.risk_alerts %}
+                <div class="risk-alert">
+                    {{ alert.type }}: {{ alert.number or alert.transaction }} - {{ alert.message }}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>위험 없음</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>소비 요약</h2>
+        {% if gpt_data.spending_summary %}
+        <table>
+            <tr>
+                <th>카테고리</th>
+                <th>금액</th>
+                <th>횟수</th>
+            </tr>
+            {% for item in gpt_data.spending_summary %}
+            <tr>
+                <td>{{ item.category }}</td>
+                <td>{{ item.amount }}</td>
+                <td>{{ item.count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>데이터 없음</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>추천 카드</h2>
+        {% if gpt_data.recommended_card %}
+            <div class="card">
+                {{ gpt_data.recommended_card.name }} ({{ gpt_data.recommended_card.type }})
+                <div class="reason">{{ gpt_data.recommended_card.reason }}</div>
+            </div>
+        {% else %}
+            <p>N/A</p>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>복합 정보</title>
+    <style>
+      /* ============================= */
+      /* 기본 리셋 */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        background-color: #e0e0e0; /* 바깥 배경 */
+      }
+
+      /* ============================= */
+      /* 중앙 정렬 */
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 16px;
+      }
+
+      /* ============================= */
+      /* 스마트폰 프레임 */
+      .phone-frame {
+        width: 420px;
+        height: 90vh;
+        background: #fff;
+        border-radius: 40px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 6px solid #333;
+        position: relative;
+      }
+
+      /* 상단 노치 (카메라 영역 흉내) */
+      .notch {
+        width: 160px;
+        height: 28px;
+        background: #333;
+        border-radius: 0 0 16px 16px;
+        margin: 0 auto;
+        position: relative;
+        top: 0;
+      }
+
+      /* ============================= */
+      /* 앱 컨테이너 */
+      .container {
+        flex: 1;
+        background-color: #ffffff;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      /* 제목 스타일 */
+      h1 {
+        font-size: 1.6rem;
+        text-align: center;
+        color: #333333;
+        margin-bottom: 16px;
+        flex-shrink: 0;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+        color: #222222;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* 단락 및 강조 텍스트 */
+      p {
+        line-height: 1.5;
+        margin-bottom: 12px;
+        color: #555555;
+      }
+
+      b {
+        color: #222222;
+      }
+
+      /* 리스트 스타일 */
+      ul {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 12px;
+      }
+
+      li {
+        background-color: #f0f0f0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        color: #444444;
+        font-size: 0.95rem;
+      }
+
+      /* 링크 스타일 */
+      a {
+        display: inline-block;
+        text-decoration: none;
+        color: #1976d2;
+        font-weight: 500;
+        margin-top: 12px;
+        flex-shrink: 0;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      /* 카드 느낌 섹션 */
+      .section-card {
+        background-color: #fafafa;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      /* 반응형 */
+      @media (max-width: 480px) {
+        .phone-frame {
+          width: 100%;
+          height: 100%;
+          border-radius: 0;
+          border: none;
+        }
+
+        .notch {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-frame">
+      <div class="notch"></div>
+      <div class="container">
+        <h1>🔍 복합 정보 조회</h1>
+
+        <div class="section-card">
+          <p><b>인식된 음성:</b> {{ transcript }}</p>
+        </div>
+
+        {% if "risk-alerts" in selected_pages %}
+        <div class="section-card">
+          <h2>📢 위험 알림</h2>
+          <ul>
+            {% for alert in risk_alerts %}
+            <li>[{{ alert.type }}] {{ alert.message }}</li>
+            {% endfor %}
+          </ul>
+          <p><b>GPT 분석:</b> {{ answers["risk-alerts"] }}</p>
+        </div>
+        {% endif %} {% if "spending-summary" in selected_pages %}
+        <div class="section-card">
+          <h2>💰 소비 요약</h2>
+          <ul>
+            {% for s in spending_summary %}
+            <li>
+              {{ s.category }} - {{ s.count }}회, 총 {{ s.amount }}원 ({{
+              s.description }})
+            </li>
+            {% endfor %}
+          </ul>
+          <p><b>GPT 분석:</b> {{ answers["spending-summary"] }}</p>
+        </div>
+        {% endif %} {% if "recommended-card" in selected_pages %}
+        <div class="section-card">
+          <h2>💳 추천 카드</h2>
+          <p>{{ recommended_card.name }} ({{ recommended_card.type }})</p>
+          <p>추천 이유: {{ recommended_card.reason }}</p>
+          <p><b>GPT 분석:</b> {{ answers["recommended-card"] }}</p>
+        </div>
+        {% endif %} {% if "fraud-detection" in selected_pages %}
+        <div class="section-card">
+          <h2>📊 거래내역 및 이상 거래 탐지</h2>
+          <ul>
+            {% for tx in recent_transactions %}
+            <li>
+              {{ tx.date }} - {{ tx.merchant }} ({{ tx.category }}) : {{
+              tx.amount }}원
+            </li>
+            {% endfor %}
+          </ul>
+          <p>
+            <b>GPT 분석 (이상 거래 탐지):</b> {{ answers["fraud-detection"] }}
+          </p>
+        </div>
+        {% endif %}
+
+        <a href="/">⬅ 홈으로</a>
+      </div>
+    </div>
+  </body>
+</html>

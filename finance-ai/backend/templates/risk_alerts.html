@@ -1,0 +1,12 @@
+<h2>음성 인식</h2>
+<p>{{ transcript }}</p>
+
+<h2>GPT 답변</h2>
+<p>{{ gpt_answer }}</p>
+
+<h2>리스크 알림 원본</h2>
+<ul>
+  {% for alert in risk_alerts %}
+  <li>{{ alert.type }} - {{ alert.message }}</li>
+  {% endfor %}
+</ul>

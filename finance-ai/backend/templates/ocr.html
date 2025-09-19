@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>OCR 결과</title>
+  </head>
+  <body>
+    <h2>OCR 결과</h2>
+    <p><strong>STT 인식 텍스트:</strong> {{ transcript }}</p>
+    <p>
+      <strong>이미지 OCR 결과:</strong><br />{{ ocr_text|replace("\n","<br />")|safe
+      }}
+    </p>
+    <a href="/">홈으로</a>
+  </body>
+</html>

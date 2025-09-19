@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>소비 내역</title>
+    <style>
+      .gpt-response {
+        white-space: pre-wrap; /* 줄바꿈 유지 */
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>💰 소비 내역 조회</h1>
+
+    <h2>음성 인식</h2>
+    <p>{{ transcript }}</p>
+
+    <h2>일상 소비 내역</h2>
+    <ul>
+      {% for item in spending_history %}
+      <li>
+        {{ item.category }}: {{ item.amount }}원 ({{ item.count }}회, {{
+        item.description }})
+      </li>
+      {% endfor %}
+    </ul>
+
+    <h2>소비 내역</h2>
+    <ul>
+      {% for item in spending_summary %}
+      <li>
+        {{ item.category }}: {{ item.amount }}원 ({{ item.count }}회, {{
+        item.description }})
+      </li>
+      {% endfor %}
+    </ul>
+
+    <h2>📊 소비 내역 이상 거래 탐지</h2>
+    <div class="gpt-response">{{ fraud_detection }}</div>
+
+    <a href="/">⬅ 홈으로</a>
+  </body>
+</html>

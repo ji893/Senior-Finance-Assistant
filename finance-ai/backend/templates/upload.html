@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Senior Finance AI Service</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: white;
+      }
+      .phone {
+        width: 360px;
+        height: 700px;
+        background: #0b0b0b;
+        border-radius: 40px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+        position: relative;
+      }
+      #status {
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 16px;
+      }
+      #recordBtn {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: none;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      #recordBtn.end {
+        background-color: #e53935;
+      }
+      #dialpad {
+        display: none;
+        margin-top: 10px;
+        width: 240px;
+        height: 320px;
+        background: #111;
+        border-radius: 20px;
+        padding: 10px;
+        box-sizing: border-box;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 10px;
+        justify-items: center;
+        align-items: center;
+      }
+      .dial-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #333;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <h1>Senior Finance AI Service</h1>
+      <p id="status">📞 통화 대기 중</p>
+      <button id="recordBtn">전화 받기</button>
+
+      <div id="dialpad">
+        <button class="dial-btn" data-val="1">1</button>
+        <button class="dial-btn" data-val="2">2</button>
+        <button class="dial-btn" data-val="3">3</button>
+        <button class="dial-btn" data-val="4">4</button>
+        <button class="dial-btn" data-val="5">5</button>
+        <button class="dial-btn" data-val="6">6</button>
+        <button class="dial-btn" data-val="7">7</button>
+        <button class="dial-btn" data-val="8">8</button>
+        <button class="dial-btn" data-val="9">9</button>
+        <button class="dial-btn" data-val="*">*</button>
+        <button class="dial-btn" data-val="0">0</button>
+        <button class="dial-btn" data-val="#">#</button>
+      </div>
+    </div>
+
+    <script>
+      let mediaRecorder,
+        audioChunks = [],
+        inCall = false;
+
+      const btn = document.getElementById("recordBtn");
+      const status = document.getElementById("status");
+      const dialpad = document.getElementById("dialpad");
+      const dialButtons = document.querySelectorAll(".dial-btn");
+
+      // ------------------------------
+      // 안정적인 녹음 함수
+      // ------------------------------
+      async function startRecording(durationMs = 5000) {
+        try {
+          if (mediaRecorder && mediaRecorder.state === "recording") {
+            console.warn("이미 녹음 중입니다.");
+            return;
+          }
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+          return new Promise((resolve, reject) => {
+            mediaRecorder.onstop = () => {
+              status.innerText = "✅ 녹음 완료";
+              resolve();
+            };
+
+            mediaRecorder.start();
+            status.innerText = "🎙️ 녹음 중...";
+
+            setTimeout(() => {
+              if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+              }
+            }, durationMs);
+          });
+        } catch (err) {
+          console.error(err);
+          status.innerText = "마이크 권한 필요!";
+        }
+      }
+
+      // ------------------------------
+      // 서버 전송 함수
+      // ------------------------------
+      async function sendToServer() {
+        status.innerText = "⏳ 서버 전송 중...";
+        const formData = new FormData();
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        formData.append("files", audioBlob, "voice.webm");
+
+        try {
+          const res = await fetch("/stt-gpt", {
+            method: "POST",
+            body: formData,
+          });
+          const html = await res.text();
+          document.open();
+          document.write(html);
+          document.close();
+        } catch (err) {
+          console.error(err);
+          status.innerText = "⚠️ 전송 실패!";
+        }
+      }
+
+      // ------------------------------
+      // 통화 시작 TTS + 녹음
+      // ------------------------------
+      async function startCallFlow() {
+        const ttsUtterance = new SpeechSynthesisUtterance(
+          "안녕하세요. 금융 인공지능 상담 서비스입니다. 1번을 누르면 이미지를 등록해주시면 됩니다."
+        );
+        ttsUtterance.lang = "ko-KR";
+        ttsUtterance.onend = async () => {
+          await startRecording(5000);
+        };
+        speechSynthesis.speak(ttsUtterance);
+      }
+
+      // ------------------------------
+      // 전화 받기 / 종료 버튼
+      // ------------------------------
+      btn.onclick = async () => {
+        if (!inCall) {
+          inCall = true;
+          btn.classList.add("end");
+          btn.innerText = "통화 종료";
+          status.innerText = "✅ 통화 중...";
+          dialpad.style.display = "grid";
+          await startCallFlow();
+        } else {
+          inCall = false;
+          btn.classList.remove("end");
+          btn.innerText = "전화 받기";
+          status.innerText = "📞 통화 대기 중";
+          dialpad.style.display = "none";
+          speechSynthesis.cancel();
+          if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+          }
+        }
+      };
+
+      // ------------------------------
+      // 1번 버튼 클릭 → 녹음 + 서버 전송
+      // ------------------------------
+      dialButtons.forEach((btn) => {
+        btn.onclick = async () => {
+          if (btn.dataset.val === "1") {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+              status.innerText = "⏳ 녹음 완료 후 서버 전송 중...";
+              mediaRecorder.onstop = async () => {
+                status.innerText = "✅ 녹음 완료, 서버 전송 중...";
+                await sendToServer();
+              };
+              mediaRecorder.stop();
+            } else {
+              status.innerText = "⏳ 녹음 시작 후 서버 전송 중...";
+              await startRecording(5000);
+              await sendToServer();
+            }
+          }
+        };
+      });
+    </script>
+  </body>
+</html>

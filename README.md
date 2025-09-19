@@ -50,7 +50,10 @@ http://127.0.0.1:8000/
 
 ![image1](https://github.com/user-attachments/assets/caa10c19-1b28-4dd8-96cc-c11493be0a3b)
 
-
+![이미지1-2](./images/image1-2.jpg)  
+![이미지2](./images/image2.jpg)  
+![이미지3](./images/image3.jpg)  
+![이미지4](./images/image4.jpg)
 
 
 
